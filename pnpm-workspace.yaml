@@ -1,0 +1,26 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  "@nestjs/core": true
+  esbuild: true
+  msgpackr-extract: true
+  sharp: true
+  unrs-resolver: true
+  msw: true
+  vue-demi: true
+minimumReleaseAgeExclude:
+  - dayjs@1.11.21
+  # - shadcn@4.10.0
+
+supportedArchitectures:
+  os:
+    - current
+    - linux
+    - win32
+  cpu:
+    - x64
+    - arm64
+  libc:
+    - glibc
+    - musl

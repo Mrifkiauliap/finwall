@@ -1,0 +1,53 @@
+{
+  "name": "finwall",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=@finwall/api",
+    "dev:web": "turbo run dev --filter=@finwall/web",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
+    "db:generate": "turbo run db:generate --filter=@finwall/db",
+    "db:migrate": "turbo run db:migrate --filter=@finwall/db",
+    "db:push": "turbo run db:push --filter=@finwall/db",
+    "db:reset": "turbo run db:push --filter=@finwall/db && turbo run db:migrate --filter=@finwall/db",
+    "db:reset:hard": "node infra/scripts/reset.js",
+    "db:seed": "turbo run db:seed --filter=@finwall/db",
+    "db:studio": "turbo run db:studio --filter=@finwall/db",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "Gentech",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/pg": "^8.23.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.5.0",
+    "pg": "^8.23.0",
+    "prettier": "3.9.6",
+    "turbo": "^2.10.12",
+    "typescript": "7.0.2"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.11.0",
+      "onFail": "download"
+    }
+  },
+  "engines": {
+    "pnpm": "11.11.0"
+  },
+  "lint-staged": {
+    "**/*.{vue}": [
+      "prettier --write"
+    ],
+    "**/*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ]
+  }
+}
