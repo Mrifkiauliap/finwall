@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { tenantRoleSchema } from "./tenant.js";
+import { tenantRoleSchema } from "./tenant-role.js";
 import { currentUserSchema } from "./user.js";
 
 // ===========================================================================
@@ -68,11 +68,13 @@ export const revokeSessionResponseSchema = z.object({
 export type RevokeSessionResponse = z.infer<typeof revokeSessionResponseSchema>;
 
 // Klaim JWT bersama untuk access + refresh token.
-// sub = users.id (numeric, string), sessionId = sessions.publicId,
-// tenantId = tenant aktif (uuid publicId, nullable), tokenType membedakan jenis.
+//
+// IDENTITY ONLY: `sub` = users.id, `sessionId` = sessions.publicId.
+// Tenant aktif TIDAK disimpan di token — konteks tenant berasal dari URL
+// (`tenantPublicId`) dan diverifikasi keanggotaannya di server. Dengan begitu
+// satu user bisa memegang banyak workspace tanpa token yang saling menimpa.
 export const jwtPayloadSchema = z.object({
   sub: z.string(),
-  tenantId: z.string().uuid({ error: "INVALID_UUID" }).nullable(),
   sessionId: z.string().uuid({ error: "INVALID_UUID" }),
   tokenType: z.enum(["access", "refresh"]),
   iat: z.number().optional(),
@@ -119,25 +121,33 @@ export const signupRequestSchema = z.object({
   username: z
     .string()
     .trim()
-    .min(4, { error: "USERNAME_TOO_SHORT" })
-    .max(50, { error: "USERNAME_TOO_LONG" })
+    .min(4, { error: "USERNAME_MIN_LENGTH" })
+    .max(50, { error: "USERNAME_MAX_LENGTH" })
     .regex(/^[a-zA-Z0-9_.-]+$/, { error: "USERNAME_INVALID_CHARS" }),
   email: z.string().trim().email({ error: "INVALID_EMAIL" }),
   password: z
     .string()
-    .min(6, { error: "PASSWORD_TOO_SHORT" })
-    .max(72, { error: "PASSWORD_TOO_LONG" })
-    .regex(/[a-z]/, { error: "PASSWORD_REQUIREMENTS" })
-    .regex(/[A-Z]/, { error: "PASSWORD_REQUIREMENTS" })
-    .regex(/[0-9]/, { error: "PASSWORD_REQUIREMENTS" })
-    .regex(/[^a-zA-Z0-9]/, { error: "PASSWORD_REQUIREMENTS" }),
-  phone: z.string().nullable().optional(),
+    .min(6, { error: "PASSWORD_MIN_LENGTH" })
+    .max(72, { error: "PASSWORD_MAX_LENGTH" })
+    .regex(/[a-z]/, { error: "PASSWORD_LOWERCASE" })
+    .regex(/[A-Z]/, { error: "PASSWORD_UPPERCASE" })
+    .regex(/[0-9]/, { error: "PASSWORD_NUMBER" })
+    .regex(/[^a-zA-Z0-9]/, { error: "PASSWORD_HAS_SPECIAL_CHAR" }),
+  // Opsional: kosong/null/undefined diizinkan; jika diisi harus 10-15 digit angka.
+  phone: z
+    .string()
+    .trim()
+    .nullable()
+    .optional()
+    .refine((v) => !v || v.length >= 10, { error: "PHONE_MIN_LENGTH" })
+    .refine((v) => !v || v.length <= 15, { error: "PHONE_MAX_LENGTH" })
+    .refine((v) => !v || /^[0-9]+$/.test(v), { error: "PHONE_NUMERIC" }),
   timezone: z.string().optional(),
 });
 
 export type SignupRequest = z.infer<typeof signupRequestSchema>;
 
-// Signin: identifier bisa berupa email / username / nomor telepon.
+// Signin: identifier bisa berupa email / username.
 export const signinRequestSchema = z.object({
   identifier: z.string().trim().min(1, { error: "IDENTIFIER_REQUIRED" }),
   password: z.string().min(1, { error: "PASSWORD_REQUIRED" }),
@@ -151,3 +161,76 @@ export const logoutResponseSchema = z.object({
 });
 
 export type LogoutResponse = z.infer<typeof logoutResponseSchema>;
+
+// ForgotPassword: identifier bisa berupa email / username/
+export const forgotPasswordRequestSchema = z.object({
+  identifier: z.string().trim().min(1, { error: "IDENTIFIER_REQUIRED" }),
+});
+
+export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
+
+// ResetPassword
+export const resetPasswordRequestSchema = z.object({
+  token: z.string().trim().min(1, { error: "TOKEN_REQUIRED" }),
+  password: z
+    .string()
+    .min(6, { error: "PASSWORD_MIN_LENGTH" })
+    .max(72, { error: "PASSWORD_MAX_LENGTH" })
+    .regex(/[a-z]/, { error: "PASSWORD_LOWERCASE" })
+    .regex(/[A-Z]/, { error: "PASSWORD_UPPERCASE" })
+    .regex(/[0-9]/, { error: "PASSWORD_NUMBER" })
+    .regex(/[^a-zA-Z0-9]/, { error: "PASSWORD_HAS_SPECIAL_CHAR" }),
+  confirmPassword: z
+    .string()
+    .min(6, { error: "CONFIRM_PASSWORD_MIN_LENGTH" })
+    .max(72, { error: "CONFIRM_PASSWORD_MAX_LENGTH" })
+    .regex(/[a-z]/, { error: "CONFIRM_PASSWORD_LOWERCASE" })
+    .regex(/[A-Z]/, { error: "CONFIRM_PASSWORD_UPPERCASE" })
+    .regex(/[0-9]/, { error: "CONFIRM_PASSWORD_NUMBER" })
+    .regex(/[^a-zA-Z0-9]/, { error: "CONFIRM_PASSWORD_HAS_SPECIAL_CHAR" }),
+});
+
+export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
+
+// ---------------------------------------------------------------------------
+// Verifikasi email
+// ---------------------------------------------------------------------------
+
+// Kode verifikasi 6 karakter (alfanumerik) dari email.
+export const verifyEmailRequestSchema = z.object({
+  token: z
+    .string()
+    .trim()
+    .min(1, { error: "TOKEN_REQUIRED" })
+    .max(12, { error: "TOKEN_INVALID" }),
+});
+
+export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;
+
+// Kirim ulang kode verifikasi; target email diambil dari sesi aktif, jadi
+// klien tidak perlu (dan tidak boleh) menentukan alamat emailnya sendiri.
+export const resendVerificationRequestSchema = z.object({}).optional();
+
+export type ResendVerificationRequest = z.infer<
+  typeof resendVerificationRequestSchema
+>;
+
+// Respons aksi verifikasi — selalu memuat status terbaru agar klien bisa
+// langsung memperbarui UI (banner "email belum diverifikasi").
+export const verifyEmailResponseSchema = z.object({
+  message: z.string(),
+  isVerified: z.boolean(),
+});
+
+export type VerifyEmailResponse = z.infer<typeof verifyEmailResponseSchema>;
+
+// Respons kirim ulang kode.
+export const resendVerificationResponseSchema = z.object({
+  message: z.string(),
+  // Kapan kode terakhir dikirim — klien memakainya untuk cooldown UI.
+  sentAt: z.string(),
+});
+
+export type ResendVerificationResponse = z.infer<
+  typeof resendVerificationResponseSchema
+>;

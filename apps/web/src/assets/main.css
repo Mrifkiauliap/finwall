@@ -1,0 +1,347 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ===========================================================================
+   Finwall Design Tokens
+   Konteks: aplikasi keuangan pribadi. Palet memprioritaskan kepercayaan
+   (teal-emerald sebagai brand), kejelasan angka, dan semantik uang
+   (income=hijau, expense=merah, warning=amber).
+   =========================================================================== */
+
+@theme inline {
+  /* Typography */
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Core */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  /* Brand */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  /* Supporting */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* UI */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Semantik finansial */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-income: var(--income);
+  --color-income-foreground: var(--income-foreground);
+  --color-expense: var(--expense);
+  --color-expense-foreground: var(--expense-foreground);
+
+  /* Chart palette (income → expense → netral) */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Elevation */
+  --shadow-elevation-sm: 0 1px 2px 0 oklch(0 0 0 / 0.04), 0 1px 3px 0 oklch(0 0 0 / 0.06);
+  --shadow-elevation-md: 0 4px 6px -1px oklch(0 0 0 / 0.07), 0 2px 4px -2px oklch(0 0 0 / 0.05);
+  --shadow-elevation-lg: 0 10px 15px -3px oklch(0 0 0 / 0.08), 0 4px 6px -4px oklch(0 0 0 / 0.05);
+
+  /* Radius */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+
+  /* ─────────────────────────────
+     Base — off-white hangat, tidak menyilaukan
+     ───────────────────────────── */
+  --background: oklch(0.99 0.003 160);
+  --foreground: oklch(0.18 0.01 180);
+
+  /* ─────────────────────────────
+     Surfaces
+     ───────────────────────────── */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.01 180);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.01 180);
+
+  /* ─────────────────────────────
+     Brand — Finwall Teal/Emerald (kepercayaan & pertumbuhan)
+     ───────────────────────────── */
+  --primary: oklch(0.55 0.13 168);
+  --primary-foreground: oklch(0.99 0.01 168);
+
+  /* ─────────────────────────────
+     Supporting surfaces
+     ───────────────────────────── */
+  --secondary: oklch(0.965 0.006 168);
+  --secondary-foreground: oklch(0.24 0.02 168);
+
+  --muted: oklch(0.968 0.005 168);
+  --muted-foreground: oklch(0.52 0.02 175);
+
+  --accent: oklch(0.955 0.02 168);
+  --accent-foreground: oklch(0.24 0.03 168);
+
+  /* ─────────────────────────────
+     UI states
+     ───────────────────────────── */
+  --destructive: oklch(0.58 0.21 25);
+  --destructive-foreground: oklch(0.99 0.01 25);
+  --border: oklch(0.91 0.008 168);
+  --input: oklch(0.91 0.008 168);
+  --ring: oklch(0.55 0.13 168);
+
+  /* ─────────────────────────────
+     Semantik finansial
+     income  = uang masuk (hijau)
+     expense = uang keluar (merah)
+     warning = mendekati limit / perlu perhatian
+     ───────────────────────────── */
+  --success: oklch(0.62 0.15 150);
+  --success-foreground: oklch(0.99 0.01 150);
+
+  --warning: oklch(0.75 0.15 75);
+  --warning-foreground: oklch(0.28 0.06 75);
+
+  --info: oklch(0.6 0.12 230);
+  --info-foreground: oklch(0.99 0.01 230);
+
+  --income: oklch(0.6 0.15 150);
+  --income-foreground: oklch(0.99 0.01 150);
+
+  --expense: oklch(0.58 0.2 25);
+  --expense-foreground: oklch(0.99 0.01 25);
+
+  /* ─────────────────────────────
+     Charts
+     ───────────────────────────── */
+  --chart-1: oklch(0.55 0.13 168);
+  --chart-2: oklch(0.62 0.15 150);
+  --chart-3: oklch(0.72 0.14 75);
+  --chart-4: oklch(0.58 0.18 300);
+  --chart-5: oklch(0.58 0.2 25);
+
+  /* ─────────────────────────────
+     Sidebar
+     ───────────────────────────── */
+  --sidebar: oklch(0.975 0.006 168);
+  --sidebar-foreground: oklch(0.18 0.01 180);
+  --sidebar-primary: oklch(0.55 0.13 168);
+  --sidebar-primary-foreground: oklch(0.99 0.01 168);
+  --sidebar-accent: oklch(0.955 0.02 168);
+  --sidebar-accent-foreground: oklch(0.24 0.03 168);
+  --sidebar-border: oklch(0.91 0.008 168);
+  --sidebar-ring: oklch(0.55 0.13 168);
+}
+
+.dark {
+  /* ─────────────────────────────
+     Base — dark slate kebiruan, nyaman utk lama
+     ───────────────────────────── */
+  --background: oklch(0.16 0.012 190);
+  --foreground: oklch(0.97 0.005 170);
+
+  /* ─────────────────────────────
+     Surfaces
+     ───────────────────────────── */
+  --card: oklch(0.205 0.014 190);
+  --card-foreground: oklch(0.97 0.005 170);
+
+  --popover: oklch(0.205 0.014 190);
+  --popover-foreground: oklch(0.97 0.005 170);
+
+  /* ─────────────────────────────
+     Brand — lebih terang di dark mode
+     ───────────────────────────── */
+  --primary: oklch(0.7 0.13 168);
+  --primary-foreground: oklch(0.16 0.02 168);
+
+  /* ─────────────────────────────
+     Supporting surfaces
+     ───────────────────────────── */
+  --secondary: oklch(0.25 0.014 190);
+  --secondary-foreground: oklch(0.97 0.005 170);
+
+  --muted: oklch(0.25 0.014 190);
+  --muted-foreground: oklch(0.7 0.015 175);
+
+  --accent: oklch(0.27 0.03 168);
+  --accent-foreground: oklch(0.97 0.005 170);
+
+  /* ─────────────────────────────
+     UI states
+     ───────────────────────────── */
+  --destructive: oklch(0.68 0.19 25);
+  --destructive-foreground: oklch(0.16 0.02 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.7 0.13 168);
+
+  /* ─────────────────────────────
+     Semantik finansial
+     ───────────────────────────── */
+  --success: oklch(0.72 0.15 150);
+  --success-foreground: oklch(0.16 0.03 150);
+
+  --warning: oklch(0.8 0.14 80);
+  --warning-foreground: oklch(0.2 0.05 80);
+
+  --info: oklch(0.72 0.12 230);
+  --info-foreground: oklch(0.16 0.03 230);
+
+  --income: oklch(0.72 0.15 150);
+  --income-foreground: oklch(0.16 0.03 150);
+
+  --expense: oklch(0.7 0.18 25);
+  --expense-foreground: oklch(0.16 0.03 25);
+
+  /* ─────────────────────────────
+     Charts
+     ───────────────────────────── */
+  --chart-1: oklch(0.7 0.13 168);
+  --chart-2: oklch(0.72 0.15 150);
+  --chart-3: oklch(0.8 0.14 80);
+  --chart-4: oklch(0.7 0.17 300);
+  --chart-5: oklch(0.7 0.18 25);
+
+  /* ─────────────────────────────
+     Sidebar
+     ───────────────────────────── */
+  --sidebar: oklch(0.185 0.012 190);
+  --sidebar-foreground: oklch(0.97 0.005 170);
+  --sidebar-primary: oklch(0.7 0.13 168);
+  --sidebar-primary-foreground: oklch(0.16 0.02 168);
+  --sidebar-accent: oklch(0.27 0.03 168);
+  --sidebar-accent-foreground: oklch(0.97 0.005 170);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.7 0.13 168);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Angka finansial: pakai tabular figures agar kolom nominal rata & mudah
+     dibandingkan. Terapkan via class `tabular-nums` (Tailwind) atau otomatis
+     pada elemen dengan data-numeric. */
+  [data-numeric],
+  .font-mono {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+}
+
+/* ===========================================================================
+   Transisi halaman — dipakai `<Transition name="page">` di `App.vue`.
+   =========================================================================== */
+
+/* Rute DOM di dalam layout `DefaultLayout` (header sticky, panel sidebar)
+   bukan flex item yang bisa `transform` tanpa mengganggu posisi; pakai opacity
+   + pergeseran halus saja. */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 200ms ease,
+    transform 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* Perpindahan layout (mis. halaman auth <-> layout aplikasi) */
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 200ms ease;
+}
+
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+}
+
+/* ===========================================================================
+   Aksesibilitas: hormati preferensi "reduce motion".
+
+   Sengaja TIDAK memakai selektor `*` dengan `!important`: aturan seperti itu
+   mematikan SEMUA animasi termasuk indikator loading (splash boot, spinner)
+   yang justru punya makna informatif. Yang dihilangkan cukup gerakan besar.
+   =========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .layout-enter-active,
+  .layout-leave-active,
+  .toast-list-enter-active,
+  .toast-list-leave-active,
+  .toast-list-move {
+    transition-duration: 0.01ms !important;
+  }
+
+  .page-enter-from,
+  .page-leave-to {
+    transform: none !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}

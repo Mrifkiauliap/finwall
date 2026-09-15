@@ -51,12 +51,10 @@ export class SessionService {
 
   private async signAccessToken(
     userId: number,
-    tenantId: string | null,
     sessionId: string,
   ): Promise<string> {
     const payload: JwtPayload = {
       sub: String(userId),
-      tenantId,
       sessionId,
       tokenType: 'access',
     };
@@ -68,12 +66,10 @@ export class SessionService {
 
   private async signRefreshToken(
     userId: number,
-    tenantId: string | null,
     sessionId: string,
   ): Promise<string> {
     const payload: JwtPayload = {
       sub: String(userId),
-      tenantId,
       sessionId,
       tokenType: 'refresh',
     };
@@ -83,15 +79,11 @@ export class SessionService {
     });
   }
 
-  /** Menandatangani access + refresh token utk userId/sessionId/tenantId. */
-  async issueTokens(
-    userId: number,
-    tenantId: string | null,
-    sessionId: string,
-  ): Promise<AuthTokens> {
+  /** Menandatangani access + refresh token (identitas saja, tanpa tenant). */
+  async issueTokens(userId: number, sessionId: string): Promise<AuthTokens> {
     const [accessToken, refreshToken] = await Promise.all([
-      this.signAccessToken(userId, tenantId, sessionId),
-      this.signRefreshToken(userId, tenantId, sessionId),
+      this.signAccessToken(userId, sessionId),
+      this.signRefreshToken(userId, sessionId),
     ]);
 
     return {
@@ -113,7 +105,7 @@ export class SessionService {
     const expiresAt = new Date(now.getTime() + REFRESH_TTL_SECONDS * 1000);
     const sessionId = randomUUID();
 
-    const tokens = await this.issueTokens(userId, tenantId, sessionId);
+    const tokens = await this.issueTokens(userId, sessionId);
     const refreshTokenHash = sha256(tokens.refreshToken);
 
     await db.insert(sessions).values({
@@ -160,11 +152,7 @@ export class SessionService {
 
     const now = new Date();
     const expiresAt = new Date(now.getTime() + REFRESH_TTL_SECONDS * 1000);
-    const tokens = await this.issueTokens(
-      session.userId,
-      tenantId,
-      sessionPublicId,
-    );
+    const tokens = await this.issueTokens(session.userId, sessionPublicId);
     const refreshTokenHash = sha256(tokens.refreshToken);
 
     await db
@@ -266,6 +254,25 @@ export class SessionService {
   // Tenant helpers (dipakai auth & tenant service)
   // ---------------------------------------------------------------------------
 
+  /**
+   * Preferensi tenant "terakhir dipakai" pada satu session.
+   *
+   * Ini BUKAN otorisasi — tenant aktif ditentukan URL dan diverifikasi
+   * keanggotaannya lewat `getTenantByPublicIdForUser`. Nilai ini hanya dipakai
+   * untuk keperluan UX (redirect setelah login).
+   */
+  async getTenantPreferenceForSession(
+    sessionId: string,
+  ): Promise<string | null> {
+    const [row] = await db
+      .select({ tenantId: sessions.tenantId })
+      .from(sessions)
+      .where(eq(sessions.publicId, sessionId))
+      .limit(1);
+
+    return row?.tenantId ?? null;
+  }
+
   /** Tenant terakhir dipakai user (dari session terbaru yg masih valid). */
   async getLastUsedTenant(userId: number): Promise<CurrentTenant | null> {
     const [last] = await db
@@ -351,5 +358,22 @@ export class SessionService {
 
   async delAuthenticatedUser(userId: number): Promise<void> {
     await cache.del(`user:auth:${userId}`);
+  }
+
+  /**
+   * Bersihkan cache terkait user setelah tenant aktif berubah
+   * (switch/create/join) supaya request berikutnya memuat data tenant &
+   * profil terbaru, bukan data workspace lama.
+   */
+  async invalidateUserCaches(
+    userId: number,
+    publicId?: string | null,
+  ): Promise<void> {
+    await Promise.all([
+      cache.del(`tenant:list:${userId}`),
+      cache.del(`tenant:member:${userId}`),
+      cache.del(`user:auth:${userId}`),
+      publicId ? cache.del(`user:profile:${publicId}`) : Promise.resolve(),
+    ]);
   }
 }

@@ -1,28 +1,12 @@
-import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
 import { z, ZodType } from "zod";
 
-export function loadEnv() {
-  if (process.env.NODE_ENV === "production") {
-    return;
-  }
-
-  let currentDir = process.cwd();
-
-  while (true) {
-    const envPath = path.join(currentDir, ".env");
-    if (fs.existsSync(envPath)) {
-      dotenv.config({ path: envPath });
-      return;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-  }
-}
+/**
+ * Modul ini TIDAK boleh mengimpor API Node (`fs`, `path`, `dotenv`).
+ *
+ * Skema & loader di sini dipakai bersama oleh backend (`@finwall/config/api`)
+ * dan frontend (`@finwall/config/web`); frontend di-bundle untuk browser,
+ * sehingga pemuatan `.env` ditempatkan terpisah di `loadEnv.ts` (Node-only).
+ */
 
 export const baseEnvSchema = z.object({
   NODE_ENV: z
@@ -33,10 +17,18 @@ export const baseEnvSchema = z.object({
 
 export type BaseConfig = z.infer<typeof baseEnvSchema>;
 
-export function createConfigLoader<TSchema extends ZodType>(schema: TSchema) {
-  loadEnv();
-
-  const parsed: z.infer<TSchema> = schema.parse(process.env);
+/**
+ * Bangun loader bertipe dari sebuah schema.
+ *
+ * `source` wajib diberikan eksplisit (mis. `process.env` di Node atau
+ * `import.meta.env` di Vite) supaya tidak ada akses implisit ke `process`
+ * yang akan gagal di browser.
+ */
+export function createEnvLoader<TSchema extends ZodType>(
+  schema: TSchema,
+  source: Record<string, unknown>,
+) {
+  const parsed: z.infer<TSchema> = schema.parse(source);
 
   function getConfig(): z.infer<TSchema>;
   function getConfig<K extends keyof z.infer<TSchema>>(

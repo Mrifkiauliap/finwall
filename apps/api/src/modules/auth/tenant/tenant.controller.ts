@@ -26,6 +26,7 @@ import type { Request, Response } from 'express';
 import { CurrentUser } from '../../../core/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../../../core/guards/jwt.guard.js';
 import { throwZodBadRequest } from '../../../core/utils/zod.js';
+import { SessionService } from '../session/session.service.js';
 import { TenantService } from './tenant.service.js';
 
 const ACCESS_COOKIE_MAX_AGE = 15 * 60 * 1000;
@@ -34,7 +35,10 @@ const secure = process.env.NODE_ENV === 'production';
 
 @Controller('auth')
 export class TenantController {
-  constructor(private readonly tenantService: TenantService) {}
+  constructor(
+    private readonly tenantService: TenantService,
+    private readonly sessionService: SessionService,
+  ) {}
 
   private setAuthCookies(res: Response, tokens: CookieTokens): void {
     res.cookie('access_token', tokens.accessToken, {
@@ -71,22 +75,32 @@ export class TenantController {
     return result;
   }
 
-  /** Semua tenant yang bisa diakses user. */
+  /**
+   * @deprecated Gunakan `GET /tenants` (TenantResourceController).
+   * Dipertahankan untuk kompatibilitas selama migrasi.
+   */
   @UseGuards(JwtAuthGuard)
   @Get('tenants')
   async listTenants(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<TenantListResponse> {
-    return this.tenantService.listTenants(user.id, user.tenantId);
+    const preferenceId =
+      await this.sessionService.getTenantPreferenceForSession(user.sessionId);
+    return this.tenantService.listTenants(user.id, preferenceId);
   }
 
-  /** Lihat membet pada tenant saat ini. */
+  /**
+   * @deprecated Gunakan `GET /tenants/:tenantPublicId/members`.
+   * Dipertahankan untuk kompatibilitas selama migrasi.
+   */
   @UseGuards(JwtAuthGuard)
   @Get('tenant/members')
   async getTenantMember(
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<TenantMemberListResponse> {
-    return this.tenantService.getTenantMember(user.id, user.tenantId);
+    const preferenceId =
+      await this.sessionService.getTenantPreferenceForSession(user.sessionId);
+    return this.tenantService.getTenantMember(user.id, preferenceId);
   }
 
   /** Buat tenant sendiri (jadi owner + aktif) dan terbitkan token baru. */

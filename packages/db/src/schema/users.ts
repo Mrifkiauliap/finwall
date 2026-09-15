@@ -23,6 +23,8 @@ export const users = pgTable(
     passwordHash: text("password_hash").notNull(),
     timezone: text("timezone").default("Asia/Jakarta").notNull(),
     isActive: boolean("is_active").default(true).notNull(),
+    isVerified: boolean("is_verified").default(false).notNull(),
+    emailVerifiedAt: tzTimestamp("email_verified_at"),
     ...timestamps(),
     ...softDelete(),
   },

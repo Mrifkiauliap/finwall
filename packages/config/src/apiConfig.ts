@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { baseEnvSchema, createConfigLoader } from "./base.js";
+import { baseEnvSchema, createEnvLoader } from "./base.js";
+import { loadEnv } from "./loadEnv.js";
 
 const port = () => z.coerce.number().int().min(1).max(65535);
 
@@ -25,6 +26,14 @@ const apiEnvSchema = baseEnvSchema
         44,
         "ENCRYPTION_KEY must be a base64-encoded 32-byte key (44 chars)",
       ),
+
+    EMAIL_HOST: z.string().default("smtp.sumopod.com"),
+    EMAIL_PORT: port().default(465),
+    EMAIL_USER: z.string().default("no-reply"),
+    EMAIL_PASSWORD: z.string().optional(),
+    EMAIL_SECURE: z.coerce.boolean().default(true),
+    EMAIL_FROM: z.string().optional(),
+    RESEND_API_KEY: z.string().optional(),
 
     DATABASE_HOST: z.string().default("localhost"),
     DATABASE_PORT: port().default(5432),
@@ -66,6 +75,9 @@ const apiEnvSchema = baseEnvSchema
 
 export type ApiConfig = z.infer<typeof apiEnvSchema>;
 
-const getConfig = createConfigLoader(apiEnvSchema);
+// Runtime Node: muat `.env` lebih dulu, lalu validasi.
+loadEnv();
+
+const getConfig = createEnvLoader(apiEnvSchema, process.env);
 
 export default getConfig;

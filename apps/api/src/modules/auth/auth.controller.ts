@@ -1,20 +1,28 @@
 import {
   type AuthenticatedUser,
   type AuthResponse,
-  type CookieTokens,
-  type LogoutResponse,
-  type MeResponse,
-  type SessionListResponse,
-  type SessionMeta,
-  type SigninRequest,
-  type SignupRequest,
   authTokensSchema,
+  type CookieTokens,
   cookieTokensSchema,
   currentTenantSchema,
   currentUserSchema,
+  type ForgotPasswordRequest,
+  forgotPasswordRequestSchema,
+  type LogoutResponse,
+  type MeResponse,
   meResponseSchema,
+  type ResendVerificationResponse,
+  type ResetPasswordRequest,
+  resetPasswordRequestSchema,
+  type SessionListResponse,
+  type SessionMeta,
+  type SigninRequest,
   signinRequestSchema,
+  type SignupRequest,
   signupRequestSchema,
+  type VerifyEmailRequest,
+  type VerifyEmailResponse,
+  verifyEmailRequestSchema,
 } from '@finwall/shared';
 import {
   BadRequestException,
@@ -151,10 +159,73 @@ export class AuthController {
     return this.toAuthResponse(res, result);
   }
 
+  //forgot password (tidak memerlukan sesi aktif)
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  async forgotPassword(
+    @Body() dto: ForgotPasswordRequest,
+  ): Promise<{ msg: string }> {
+    const parsed = forgotPasswordRequestSchema.safeParse(dto);
+    if (!parsed.success) {
+      throwZodBadRequest(parsed.error);
+    }
+    return this.authService.forgotPassword(parsed.data);
+  }
+
+  @Post('verify-forgot-password-token')
+  @HttpCode(HttpStatus.OK)
+  async verifyForgotPasswordToken(
+    @Body() body: { token: string },
+  ): Promise<{ msg: string }> {
+    return this.authService.verifyForgotPasswordToken(body.token);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body() dto: ResetPasswordRequest,
+  ): Promise<{ msg: string }> {
+    const parsed = resetPasswordRequestSchema.safeParse(dto);
+    if (!parsed.success) {
+      throwZodBadRequest(parsed.error);
+    }
+    return this.authService.resetPassword(parsed.data);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Verifikasi email
+  // ---------------------------------------------------------------------------
+  //
+  // Kedua endpoint butuh sesi aktif: identitas user diambil dari JWT, bukan dari
+  // body, sehingga kode hanya bisa diverifikasi untuk akun yang sedang login.
+
+  @UseGuards(JwtAuthGuard)
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: VerifyEmailRequest,
+  ): Promise<VerifyEmailResponse> {
+    const parsed = verifyEmailRequestSchema.safeParse(dto);
+    if (!parsed.success) {
+      throwZodBadRequest(parsed.error);
+    }
+    return this.authService.verifyEmail(user.id, parsed.data);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  async resendVerification(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<ResendVerificationResponse> {
+    return this.authService.resendVerification(user.id);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@CurrentUser() user: AuthenticatedUser): Promise<MeResponse> {
-    const result = await this.authService.getMe(user.id, user.tenantId);
+    const result = await this.authService.getMe(user.id, user.sessionId);
     return meResponseSchema.parse(result);
   }
 

@@ -58,10 +58,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('User not found or account is inactive');
     }
 
+    // Identitas saja: tenant aktif tidak diambil dari token, melainkan
+    // di-resolve dari URL oleh TenantGuard.
     return {
       ...user,
       sessionId,
-      tenantId: payload.tenantId ?? null,
     };
   }
 
@@ -99,9 +100,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     // internal (id numeric, timestamp) yang dibutuhkan guard/handler.
     const cacheKey = `user:auth:${userId}`;
     const cached =
-      await cache.get<Omit<AuthenticatedUser, 'sessionId' | 'tenantId'>>(
-        cacheKey,
-      );
+      await cache.get<Omit<AuthenticatedUser, 'sessionId'>>(cacheKey);
 
     if (cached) {
       if (!cached.isActive) {
@@ -120,6 +119,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         avatarUrl: users.avatarUrl,
         timezone: users.timezone,
         isActive: users.isActive,
+        isVerified: users.isVerified,
+        emailVerifiedAt: users.emailVerifiedAt,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -140,6 +141,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       avatarUrl: user.avatarUrl,
       timezone: user.timezone,
       isActive: user.isActive,
+      isVerified: user.isVerified,
+      emailVerifiedAt: user.emailVerifiedAt
+        ? user.emailVerifiedAt.toISOString()
+        : null,
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
     };

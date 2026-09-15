@@ -2,8 +2,18 @@ import { db } from '@finwall/db';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { EmailService } from '../email/email.service.js';
 import { AuthService } from './auth.service.js';
 import { SessionService } from './session/session.service.js';
+
+// Argon2id adalah modul native (Rust). Di test, hashing nyata tidak relevan —
+// yang diuji adalah alur service — jadi modulnya di-mock agar cepat & bebas
+// ketergantungan binari per platform.
+vi.mock('@finwall/shared/password', () => ({
+  hashPassword: vi.fn().mockResolvedValue('$argon2id$mocked'),
+  verifyPassword: vi.fn().mockResolvedValue(true),
+  passwordNeedsRehash: vi.fn().mockReturnValue(false),
+}));
 
 vi.mock('@finwall/cache', () => ({
   cache: {
@@ -80,6 +90,22 @@ vi.mock('@finwall/db', () => ({
     expiresAt: 'expiresAt',
     createdAt: 'createdAt',
   },
+  userEmailVerifications: {
+    id: 'id',
+    userId: 'userId',
+    tokenHash: 'tokenHash',
+    expiresAt: 'expiresAt',
+    usedAt: 'usedAt',
+    createdAt: 'createdAt',
+  },
+  userPasswordResets: {
+    id: 'id',
+    userId: 'userId',
+    tokenHash: 'tokenHash',
+    expiresAt: 'expiresAt',
+    usedAt: 'usedAt',
+    createdAt: 'createdAt',
+  },
   and: vi.fn(),
   eq: vi.fn(),
   isNull: vi.fn(),
@@ -104,6 +130,16 @@ describe('AuthService', () => {
           useValue: {
             signAsync: vi.fn().mockResolvedValue('mock_token'),
             verifyAsync: vi.fn(),
+          },
+        },
+        {
+          // EmailService di-inject AuthService sejak alur verifikasi email
+          // ditambahkan; di sini cukup di-stub karena tidak ada SMTP di test.
+          provide: EmailService,
+          useValue: {
+            send: vi.fn().mockResolvedValue(undefined),
+            sendForgotPassword: vi.fn().mockResolvedValue(undefined),
+            sendVerifyEmail: vi.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -142,7 +178,9 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when user is not found', async () => {
-      // signin schema valid, db returns empty -> UnauthorizedException
+      // signin schema valid, db returns empty -> UnauthorizedException.
+      // Pesan sengaja GENERIK (sama utk user tidak ada & password salah) supaya
+      // tidak membocorkan keberadaan akun (anti user-enumeration).
       const selectMock = vi.fn().mockReturnValue({
         from: vi.fn().mockReturnValue({
           where: vi.fn().mockReturnValue({
@@ -157,7 +195,7 @@ describe('AuthService', () => {
           identifier: 'nonexistent@example.com',
           password: 'Password123!',
         }),
-      ).rejects.toThrow('Email / Username tidak terdaftar');
+      ).rejects.toThrow('Kredensial kamu tidak valid atau password salah');
     });
   });
 });

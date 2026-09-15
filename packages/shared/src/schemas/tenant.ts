@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { authTokensSchema, currentTenantSchema } from "./auth.js";
+import { tenantRoleSchema } from "./tenant-role.js";
 import { currentUserSchema } from "./user.js";
+import { workspaceTemplateIdSchema } from "./workspace-template.js";
 
 // ===========================================================================
 // tenant.ts — contract tenant (workspace): daftar, buat, pindah, undangan.
@@ -9,10 +11,6 @@ import { currentUserSchema } from "./user.js";
 //   auth.ts  -> user.ts
 //   tenant.ts -> auth.ts + user.ts
 // ===========================================================================
-
-export const tenantRoleSchema = z.enum(["owner", "admin", "member", "viewer"]);
-
-export type TenantRole = z.infer<typeof tenantRoleSchema>;
 
 export const tenantInviteStatusSchema = z.enum([
   "pending",
@@ -65,6 +63,13 @@ export const createTenantRequestSchema = z.object({
     .trim()
     .min(1, { error: "TENANT_NAME_REQUIRED" })
     .max(100, { error: "TENANT_NAME_TOO_LONG" }),
+  // Template awal (akun & kategori bawaan).
+  //
+  // Sengaja `.optional()` TANPA `.default()`: `@vee-validate/zod` memanggil
+  // `_def.defaultValue()` (bentuk Zod 3) dan gagal pada Zod 4, sedangkan skema
+  // ini juga dipakai frontend lewat `toTypedSchema`. Nilai default diterapkan
+  // di service (`?? DEFAULT_WORKSPACE_TEMPLATE_ID`).
+  template: workspaceTemplateIdSchema.optional(),
 });
 
 export type CreateTenantRequest = z.infer<typeof createTenantRequestSchema>;

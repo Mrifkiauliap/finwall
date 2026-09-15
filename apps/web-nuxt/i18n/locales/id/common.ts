@@ -1,0 +1,92 @@
+export default {
+  common: {
+    TITLE: "Finwall",
+    BUTTON: {
+      UNDO: "Kembalikan",
+      REDO: "Ulangi",
+      SAVE: "Simpan",
+      CANCEL: "Batal",
+    },
+    MESSAGE: {
+      PROCESSING: "Memproses...",
+    },
+    settings: {
+      TITLE: "Pengaturan",
+      SUBTITLE: "Kelola profil, preferensi tampilan, dan keamanan akun Anda.",
+      BACK: "Kembali",
+      GROUPS: {
+        GENERAL: "Umum",
+      },
+      PAGES: {
+        PROFILE: "Profil",
+        PROFILE_DESC: "Perbarui nama, email, dan foto profil Anda.",
+        PREFERENCES: "Preferensi",
+        PREFERENCES_DESC: "Sesuaikan tema dan bahasa antarmuka.",
+        SECURITY: "Keamanan & Sesi",
+        SECURITY_DESC: "Kelola password dan perangkat yang sedang login.",
+      },
+      TABS: {
+        PROFILE: "Profil",
+        PREFERENCES: "Preferensi",
+        SECURITY: "Keamanan & Sesi",
+      },
+    },
+    navigation: {
+      BREADCRUMB_LABEL: "Breadcrumb",
+      MENU_MAIN: "Menu Utama",
+      MORE: "Lainnya",
+      CLOSE: "Tutup",
+      SEARCH: "Cari",
+      NOTIFICATIONS: "Notifikasi",
+      DASHBOARD: "Dashboard",
+      ACCOUNTS: "Akun",
+      TRANSACTIONS: "Transaksi",
+      REPORTS: "Laporan & Analitik",
+      MENU_TEAM: "Pengaturan & Tim",
+      MEMBERS: "Anggota Tim",
+      WORKSPACE_SETTINGS: "Pengaturan Workspace",
+      BILLING: "Billing & Langganan",
+      HELP: "Bantuan",
+      LOGOUT: "Keluar",
+      LOGGING_OUT: "Keluar...",
+    },
+    error: {
+      "404": "Halaman Tidak Ditemukan",
+      "404_DESC":
+        "Maaf, alamat URL yang Anda tuju tidak ditemukan atau salah. Silakan periksa kembali tautan Anda.",
+      BACK_TO_HOME: "Kembali ke Beranda",
+    },
+  },
+  notification: {
+    TITLE: {
+      SUCCESS: "Berhasil",
+      WARNING: "Peringatan",
+      INFO: "Informasi",
+      ERROR: "Terjadi kesalahan",
+    },
+    BODY: {
+      SUCCESS: "{action} berhasil!",
+      ERROR: "Terjadi kesalahan",
+    },
+  },
+  accountmenu: {
+    USER_FALLBACK: "Pengguna",
+    THEME_LIGHT: "Tema Terang",
+    THEME_DARK: "Tema Gelap",
+    SETTINGS: "Pengaturan",
+    HELP: "Bantuan & FAQ",
+  },
+  workspace: {
+    TOGGLE_PANEL: "Buka/tutup panel akun",
+    NO_WORKSPACE: "Pilih Workspace",
+    LIST_TITLE: "Workspace Anda",
+    EMPTY: "Belum ada workspace.",
+    CREATE_NEW: "Buat workspace baru",
+    JOIN: "Gabung dengan kode",
+    RETRY: "Coba lagi",
+    SWITCH_SUCCESS_TITLE: "Workspace diganti",
+    SWITCH_SUCCESS_MESSAGE: 'Sekarang di "{name}".',
+    SWITCHING: "Memindahkan workspace...",
+    PLEASE_WAIT: "Mohon tunggu sebentar...",
+  },
+} as const;

@@ -283,6 +283,8 @@ export class InviteService {
       meta,
     );
 
+    await this.sessionService.invalidateUserCaches(userId, user.publicId);
+
     return {
       user: toSafeUser(user),
       tenant: {
@@ -381,6 +383,11 @@ export class InviteService {
       userId,
       tenantRow.publicId,
       meta,
+    );
+
+    await this.sessionService.invalidateUserCaches(
+      userId,
+      user?.publicId ?? null,
     );
 
     return {

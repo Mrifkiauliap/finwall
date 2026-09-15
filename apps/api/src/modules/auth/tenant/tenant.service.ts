@@ -10,6 +10,7 @@ import {
 } from '@finwall/db';
 import {
   type CreateTenantRequest,
+  DEFAULT_WORKSPACE_TEMPLATE_ID,
   type SessionMeta,
   type SwitchTenantRequest,
   type TenantAuthResponse,
@@ -34,10 +35,14 @@ import {
 import { cache } from '@finwall/cache';
 import { toSafeUser } from '../auth.service.js';
 import { SessionService } from '../session/session.service.js';
+import { WorkspaceSeederService } from './workspace-seeder.service.js';
 
 @Injectable()
 export class TenantService {
-  constructor(private readonly sessionService: SessionService) {}
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly workspaceSeeder: WorkspaceSeederService,
+  ) {}
 
   /** Semua tenant yang bisa diakses user, dengan peran masing-masing. */
   async listTenants(
@@ -127,7 +132,7 @@ export class TenantService {
     dto: CreateTenantRequest,
     meta: SessionMeta,
   ): Promise<TenantAuthResponse> {
-    const { name } = createTenantRequestSchema.parse(dto);
+    const { name, template } = createTenantRequestSchema.parse(dto);
 
     const [exists] = await db
       .select()
@@ -151,7 +156,18 @@ export class TenantService {
       role: 'owner',
     });
 
-    const tenant = { publicId: created.publicId, name: created.name };
+    // Tanam akun & kategori bawaan sesuai template pilihan pengguna.
+    // Best-effort: kegagalan tidak membatalkan workspace yang sudah dibuat.
+    await this.workspaceSeeder.seed(
+      created.id,
+      template ?? DEFAULT_WORKSPACE_TEMPLATE_ID,
+    );
+
+    const tenant = {
+      publicId: created.publicId,
+      name: created.name,
+      role: 'owner' as const,
+    };
 
     const user = await this.getUserById(userId);
     if (!user) {
@@ -163,6 +179,9 @@ export class TenantService {
       tenant.publicId,
       meta,
     );
+
+    // Data terikat workspace lama tidak boleh terbawa ke workspace baru.
+    await this.sessionService.invalidateUserCaches(userId, user.publicId);
 
     return tenantAuthResponseSchema.parse({
       user: toSafeUser(user),
@@ -195,6 +214,9 @@ export class TenantService {
       meta,
     );
 
+    // Data terikat workspace lama tidak boleh terbawa ke workspace baru.
+    await this.sessionService.invalidateUserCaches(userId, user.publicId);
+
     return tenantAuthResponseSchema.parse({
       user: toSafeUser(user),
       tenant,
@@ -216,10 +238,14 @@ export class TenantService {
     return user ?? null;
   }
 
-  /** Tenant by publicId, hanya bila user adalah member-nya. */
+  /** Tenant by publicId (beserta role user), hanya bila user member-nya. */
   private async getTenantForUser(userId: number, tenantPublicId: string) {
     const [row] = await db
-      .select({ publicId: tenants.publicId, name: tenants.name })
+      .select({
+        publicId: tenants.publicId,
+        name: tenants.name,
+        role: tenantUsers.role,
+      })
       .from(tenantUsers)
       .innerJoin(tenants, eq(tenantUsers.tenantId, tenants.id))
       .where(

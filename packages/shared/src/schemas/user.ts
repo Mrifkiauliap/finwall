@@ -10,15 +10,22 @@ export const currentUserSchema = z.object({
   avatarUrl: z.string().nullable(),
   timezone: z.string(),
   isActive: z.boolean(),
+  // Status verifikasi email. Dipakai klien untuk menampilkan banner
+  // "email belum diverifikasi" — BUKAN otorisasi (itu tetap di server).
+  isVerified: z.boolean(),
+  // Waktu verifikasi (ISO string) atau null bila belum diverifikasi.
+  emailVerifiedAt: z.string().nullable(),
 });
 
 export type CurrentUser = z.infer<typeof currentUserSchema>;
 
 // Principal yang ditempelkan JwtStrategy ke `request.user` setelah autentikasi.
+//
+// Murni identitas: tenant aktif tidak ikut di sini. Kebutuhan tenant pada request
+// diambil dari URL via `TenantGuard` (`request.tenant` / `@CurrentTenant()`).
 export const authenticatedUserSchema = currentUserSchema.extend({
   id: z.number().int(),
   sessionId: z.string().uuid({ error: "INVALID_UUID" }),
-  tenantId: z.string().uuid({ error: "INVALID_UUID" }).nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
 });

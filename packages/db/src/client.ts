@@ -15,4 +15,15 @@ const pool = new Pool({
 
 export const db = drizzle(pool, { schema });
 export type Drizzle = typeof db;
+
+/**
+ * Tutup koneksi pool.
+ *
+ * Dipakai script CLI (seed, tooling) agar proses Node benar-benar keluar dan
+ * tidak menggantung menunggu koneksi idle.
+ */
+export async function closeDb(): Promise<void> {
+  await pool.end();
+}
+
 export default db;

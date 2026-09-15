@@ -1,0 +1,151 @@
+export default {
+  common: {
+    TITLE: 'Finwall',
+    BUTTON: {
+      UNDO: 'Undo',
+      REDO: 'Redo',
+      SAVE: 'Save',
+      CANCEL: 'Cancel',
+      CONFIRM: 'Confirm',
+    },
+    MESSAGE: {
+      PROCESSING: 'Processing...',
+    },
+    settings: {
+      TITLE: 'Settings',
+      SUBTITLE: 'Manage your profile, display preferences, and account security.',
+      BACK: 'Back',
+      GROUPS: {
+        GENERAL: 'General',
+        NOTIFICATIONS: 'Notifications',
+        MORE: 'More',
+      },
+      /**
+       * Label & deskripsi untuk MENU pengaturan (sidebar + tab).
+       *
+       * Judul halaman + pesan "segera hadir" ada di namespace `settingsPages`
+       * (`page.ts`), supaya satu halaman yang belum jadi tidak memaksa menu-nya
+       * ikut disembunyikan.
+       */
+      PAGES: {
+        PROFILE: 'Profile',
+        PROFILE_DESC: 'Update your name, email, and profile photo.',
+        PREFERENCES: 'Preferences',
+        PREFERENCES_DESC: 'Adjust the interface theme and language.',
+        APPEARANCE: 'Appearance',
+        APPEARANCE_DESC: 'Fine-tune colors, density, and interface scaling.',
+        SECURITY: 'Security & Sessions',
+        SECURITY_DESC: 'Manage your password and signed-in devices.',
+        EMAIL: 'Email',
+        EMAIL_DESC: 'What gets sent to your inbox.',
+        PUSH: 'Push',
+        PUSH_DESC: 'Browser and device alerts.',
+        WHATSAPP: 'WhatsApp',
+        WHATSAPP_DESC: 'Reminders through WhatsApp.',
+        GUIDES: 'Guides',
+        GUIDES_DESC: 'Step-by-step walkthroughs.',
+        CHANGE_LOG: 'Change Log',
+        CHANGE_LOG_DESC: 'What is new and fixed.',
+      },
+      LOGOUT: 'Sign out',
+    },
+    navigation: {
+      BREADCRUMB_LABEL: 'Breadcrumb',
+      MENU_MAIN: 'Main Menu',
+      MORE: 'More',
+      CLOSE: 'Close',
+      SEARCH: 'Search',
+      NOTIFICATIONS: 'Notifications',
+      DASHBOARD: 'Dashboard',
+      ACCOUNTS: 'Accounts',
+      TRANSACTIONS: 'Transactions',
+      REPORTS: 'Reports & Analytics',
+      MENU_TEAM: 'Settings & Team',
+      MEMBERS: 'Team Members',
+      WORKSPACE_SETTINGS: 'Workspace Settings',
+      BILLING: 'Billing & Subscription',
+      HELP: 'Help',
+      LOGOUT: 'Sign out',
+      LOGGING_OUT: 'Signing out...',
+    },
+    emailVerification: {
+      BANNER_TITLE: 'Your email is not verified',
+      BANNER_MESSAGE: 'Verify it now to keep your account secure and unlock every Finwall feature.',
+      BANNER_ACTION: 'Verify now',
+      BANNER_DISMISS: 'Dismiss reminder',
+      BANNER_DISMISSED_LATER: 'This reminder will appear again when you open a new page.',
+    },
+    command: {
+      TITLE: 'Command shell',
+      PLACEHOLDER: 'Type a command or search…',
+      MASTER_CHANGED: 'Shortcut master changed to {master}.',
+      EMPTY: 'No matching commands',
+      EMPTY_HINT: 'Try another keyword, or press Esc to close.',
+      GROUP: {
+        NAVIGATION: 'Go to',
+        ACTIONS: 'Actions',
+      },
+      ACTION: {
+        SEARCH: 'Open command shell',
+        TOGGLE_THEME: 'Switch light / dark theme',
+        TOGGLE_THEME_KEYWORDS: 'theme dark light mode appearance',
+        TOGGLE_PANEL: 'Toggle accounts panel',
+        TOGGLE_PANEL_KEYWORDS: 'sidebar panel accounts collapse',
+        CHANGE_MASTER: 'Change shortcut master (now {master})',
+        CHANGE_MASTER_KEYWORDS: 'shortcut master ctrl alt command keyboard win',
+        SETTINGS: 'Account settings',
+        SETTINGS_KEYWORDS: 'profile preferences security account',
+        HELP: 'Help & FAQ',
+        HELP_KEYWORDS: 'help faq support documentation',
+        SIGN_OUT_KEYWORDS: 'sign out logout exit leave account',
+      },
+      HINT: {
+        NAVIGATE: 'Navigate',
+        SELECT: 'Select',
+        MASTER: 'Shortcut master',
+        CLOSE: 'Close',
+      },
+    },
+    error: {
+      '404': 'Page Not Found',
+      '404_DESC':
+        'Sorry, the page or path you are looking for does not exist or is invalid. Please check your URL.',
+      BACK_TO_HOME: 'Back to Home',
+    },
+  },
+  notification: {
+    TITLE: {
+      SUCCESS: 'Success',
+      WARNING: 'Warning',
+      INFO: 'Information',
+      ERROR: 'Failed',
+    },
+    BODY: {
+      SUCCESS: '{action} successfully!',
+      ERROR: 'Something went wrong',
+    },
+  },
+  accountmenu: {
+    USER_FALLBACK: 'User',
+    THEME_LIGHT: 'Light Theme',
+    THEME_DARK: 'Dark Theme',
+    SETTINGS: 'Settings',
+    HELP: 'Help & FAQ',
+  },
+  workspace: {
+    TOGGLE_PANEL: 'Toggle accounts panel',
+    RESIZE_PANEL: 'Resize accounts panel',
+    RESIZE_PANEL_HINT:
+      'Drag to resize. Double-click (or press Enter) to restore the default width.',
+    NO_WORKSPACE: 'Select Workspace',
+    LIST_TITLE: 'Your Workspaces',
+    EMPTY: 'No workspaces yet.',
+    CREATE_NEW: 'Create new workspace',
+    JOIN: 'Join with code',
+    RETRY: 'Try again',
+    SWITCH_SUCCESS_TITLE: 'Workspace switched',
+    SWITCH_SUCCESS_MESSAGE: 'Now in "{name}".',
+    SWITCHING: 'Switching workspace...',
+    PLEASE_WAIT: 'Please wait a moment...',
+  },
+} as const
